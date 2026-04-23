@@ -54,8 +54,6 @@ cd tibetan-aligner
 docker build -t tibetan-aligner .
 ```
 
-> **Note on the current `main`:** the pinned `sentence-transformers==2.2.2` is incompatible with recent `huggingface_hub` releases. If the build completes but alignment produces an empty output file, add `huggingface_hub<0.16` to `requirements.txt` before building. See [Troubleshoot](#troubleshoot).
-
 The build runs a single-line alignment smoke test at the end. If you see a line like `སློབ་དཔོན་བྲམ་ཟེ་རྟ་དབྱངསཀྱིཡོམཛད། \tHello World` in the build output, the pipeline works.
 
 ### Align a text pair
@@ -113,8 +111,8 @@ Change them by editing the script or by forking the image with your own values. 
 
 | Issue | Solution |
 |---|---|
-| `ImportError: cannot import name 'cached_download' from 'huggingface_hub'` during alignment, followed by empty `.train_cleaned` | Add `huggingface_hub<0.16` to `requirements.txt` and rebuild with `docker build --no-cache -t tibetan-aligner .`. The pinned `sentence-transformers==2.2.2` depends on a function removed from `huggingface_hub` 0.26+. |
-| `pip install -r requirements.txt` fails with `ModuleNotFoundError: No module named 'pkg_resources'` during `pyewts` build | Use the Docker install path. The `pyewts==0.2.0` wheel build is incompatible with modern pip's isolated build environments. If you must install natively, create a virtualenv, install `setuptools` and `wheel` first, then run `pip install -r requirements.txt --no-build-isolation`. |
+| `pip install -r requirements.txt` fails with `ModuleNotFoundError: No module named 'pkg_resources'` during `pyewts` build | Use the Docker install path. The `pyewts==0.2.0` wheel build imports `pkg_resources` at build time, which `setuptools` 81+ no longer bundles. If you must install natively, create a virtualenv and run `pip install --upgrade pip "setuptools<81" wheel`, then `pip install -r requirements.txt --no-build-isolation`. |
+| `ImportError: cannot import name 'cached_download' from 'huggingface_hub'` when building an older commit | `sentence-transformers==2.2.2` imports a function removed in `huggingface_hub` 0.26+. Current `main` pins `huggingface_hub<0.16` to avoid this; if you're on an older commit, add the same pin to `requirements.txt` before building. |
 | `rm: cannot remove '…ladder': No such file or directory` (and similar) | Cosmetic. `align_tib_en.sh` unconditionally cleans up intermediate files from a previous run; on a fresh run those files don't exist. Ignore. |
 | `WARNI Failed to find overlap=N line "PAD". Will use random vector.` (many repeats) | Expected behavior when the corpus is small enough that Vecalign pads the overlay window with random vectors. Harmless; doesn't affect final output. |
 | The model downloads every time you `docker run` | Mount a persistent cache: add `-v $(pwd)/.model-cache:/root/.cache` to your `docker run` command. The first run fills the cache; later runs reuse it. |
@@ -151,8 +149,6 @@ Because this is a packaging fork, please route contributions to the right place:
 
 - **Alignment algorithm, embedding logic, output format bugs** → open an issue or PR against the upstream [sebastian-nehrdich/align-tibetan](https://github.com/sebastian-nehrdich/align-tibetan).
 - **Docker image, CI, requirements pinning, sample data, this README** → open an issue or PR against this repo.
-
-The highest-value open contribution today is pinning `huggingface_hub<0.16` in `requirements.txt` so fresh builds work out of the box.
 
 ## License
 
