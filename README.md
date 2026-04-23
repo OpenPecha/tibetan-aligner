@@ -121,7 +121,7 @@ Change them by editing the script or by forking the image with your own values. 
 Other support resources:
 
 - [Open a GitHub issue](https://github.com/OpenPecha/tibetan-aligner/issues)
-- [WeBuddhist developers Discord](https://discord.gg/hM6VDp6N)
+- [WeBuddhist developers Discord](https://discord.gg/dHKNXaAdVj)
 - [WeBuddhist community forum](https://forum.openpecha.org/)
 
 ## How it works
